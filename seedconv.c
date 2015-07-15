@@ -2,41 +2,41 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE	0xAC000
+#define BUFFER_SIZE    0xAC000
 #define TITLEID_OFFSET 0x7000
 #define SEED_OFFSET (TITLEID_OFFSET + (2000*8))
 #define MIN_SIZE 0xAC000
 
 void showhelp_exit() {
-	printf("usage: SEEDconv [00000000] ...\n");
+    printf("usage: SEEDconv [00000000] ...\n");
     printf(" get [00000000] file on N3DS 9.6.0+ from:\n");
     printf(" nand:/data/<console-unique>/sysdata/0001000f/\n\n");
-	exit(0);
+    exit(0);
 }
 
 int main( int argc, char** argv )
 {
-	FILE* fp;
-	unsigned char* buffer;
+    FILE* fp;
+    unsigned char* buffer;
     unsigned char* seeddb;
     
     int n_seeds = 0;
-	
-	printf("\nSEEDconv by d0k3\n");
-	printf("----------------\n");
-	
-	if(argc < 2) showhelp_exit();
+    
+    printf("\nSEEDconv by d0k3\n");
+    printf("----------------\n");
+    
+    if(argc < 2) showhelp_exit();
     
     buffer = (unsigned char*) malloc(BUFFER_SIZE);
-	seeddb = (unsigned char*) malloc(BUFFER_SIZE);
-	if((buffer == NULL) || (seeddb == NULL)) {
-		printf("out of memory");
-		return 0;
-	}
+    seeddb = (unsigned char*) malloc(BUFFER_SIZE);
+    if((buffer == NULL) || (seeddb == NULL)) {
+        printf("out of memory");
+        return 0;
+    }
     
     memset(seeddb, 0x00, BUFFER_SIZE);
     while ( --argc > 0 ) {
-		argv++;
+        argv++;
         printf("\n\"%s\"...\n", *argv);
         fp = fopen(*argv, "rb");
         if (fp == NULL) {
@@ -70,7 +70,7 @@ int main( int argc, char** argv )
     }
     
     printf("\n----------------\n");
-	*((int*) seeddb) = n_seeds;
+    *((int*) seeddb) = n_seeds;
     if ( n_seeds > 0 ) {
         fp = fopen("seeddb.bin", "wb");
         if(fp == NULL) {
@@ -83,9 +83,9 @@ int main( int argc, char** argv )
     } else {
         printf("No SEEDs found!\n\n");
     }    
-	
-	free(buffer);
-	free(seeddb);
-	
-	return 1;
+    
+    free(buffer);
+    free(seeddb);
+    
+    return 1;
 }
