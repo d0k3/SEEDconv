@@ -51,7 +51,7 @@ int main( int argc, char** argv )
         fclose(fp);
     
         // collect seeds
-        for ( size_t i = 0; i < (0x2000 / 0x8); i++ ) {
+        for ( size_t i = 0; i < 2000; i++ ) {
             static const char magic[4] = { 0x00, 0x00, 0x04, 0x00 };
             unsigned char* titleId = buffer + TITLEID_OFFSET + (i*8);
             unsigned char* seed = buffer + SEED_OFFSET + (i*16);
