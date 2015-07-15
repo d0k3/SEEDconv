@@ -1,0 +1,8 @@
+00000000*
+*.sav
+*.bin
+*.zip
+*.exe
+*.py
+
+.DS_Store
