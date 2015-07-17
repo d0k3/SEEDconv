@@ -2,10 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE    0xAC000
+#define BUFFER_SIZE 0xAC000
 #define TITLEID_OFFSET 0x7000
 #define SEED_OFFSET (TITLEID_OFFSET + (2000*8))
-#define MIN_SIZE 0xAC000
 
 void showhelp_exit() {
     printf("usage: SEEDconv [00000000] ...\n");
