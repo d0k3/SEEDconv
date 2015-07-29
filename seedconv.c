@@ -35,36 +35,56 @@ int main( int argc, char** argv )
     
     memset(seeddb, 0x00, BUFFER_SIZE);
     while ( --argc > 0 ) {
+        size_t size;
         argv++;
+        
         printf("\n\"%s\"...\n", *argv);
         fp = fopen(*argv, "rb");
         if (fp == NULL) {
             printf("could not open file!\n\n");
             continue;
         }
-        if (fread(buffer, 1, BUFFER_SIZE, fp) != BUFFER_SIZE) {
-            printf("file is too small!\n\n");
-            fclose(fp);
-            continue;
-        };
+        size = fread(buffer, 1, BUFFER_SIZE, fp);
         fclose(fp);
     
         // collect seeds
-        for ( size_t i = 0; i < 2000; i++ ) {
-            static const char magic[4] = { 0x00, 0x00, 0x04, 0x00 };
-            unsigned char* titleId = buffer + TITLEID_OFFSET + (i*8);
-            unsigned char* seed = buffer + SEED_OFFSET + (i*16);
-            int exid = 0;
-            if ( memcmp(titleId + 4, magic, 4) != 0 ) continue;
-            for (exid = 0; exid < n_seeds; exid++) // duplicate check
-                if ( memcmp(titleId, seeddb + 0x10 + (0x20 * exid), 8) == 0 ) break;
-            if (exid < n_seeds) continue;
-            memcpy(seeddb + 0x10 + (0x20 * n_seeds), titleId, 0x8);
-            memcpy(seeddb + 0x18 + (0x20 * n_seeds), seed, 0x10);
-            printf("SEED found (%i):\n%08X%08X\n%08X%08X\n%08X%08X\n", ++n_seeds,
-                *((unsigned int*) (titleId + 4)), *((unsigned int*) titleId),
-                *((unsigned int*) (seed + 12)), *((unsigned int*) (seed + 8)),
-                *((unsigned int*) (seed + 4)), *((unsigned int*) seed));
+        if ( size == BUFFER_SIZE ) { // most likely a 00000000 file 
+            for ( size_t i = 0; i < 2000; i++ ) {
+                static const char magic[4] = { 0x00, 0x00, 0x04, 0x00 };
+                unsigned char* titleId = buffer + TITLEID_OFFSET + (i*8);
+                unsigned char* seed = buffer + SEED_OFFSET + (i*16);
+                int exid = 0;
+                if ( memcmp(titleId + 4, magic, 4) != 0 ) continue;
+                for (exid = 0; exid < n_seeds; exid++) // duplicate check
+                    if ( memcmp(titleId, seeddb + 0x10 + (0x20 * exid), 8) == 0 ) break;
+                if (exid < n_seeds) continue;
+                memcpy(seeddb + 0x10 + (0x20 * n_seeds), titleId, 0x8);
+                memcpy(seeddb + 0x18 + (0x20 * n_seeds), seed, 0x10);
+                printf("SEED found (%i):\n%08X%08X\n%08X%08X\n%08X%08X\n", ++n_seeds,
+                    *((unsigned int*) (titleId + 4)), *((unsigned int*) titleId),
+                    *((unsigned int*) (seed + 12)), *((unsigned int*) (seed + 8)),
+                    *((unsigned int*) (seed + 4)), *((unsigned int*) seed));
+            }
+        } else { // maybe a seeddb.bin to merge - check first
+            static const char zeroes[16] = { 0 };
+            int n_entries = *(int*) buffer;
+            if ((n_entries != (int) (size - 16) / 32) || (memcmp(buffer + 2, zeroes, 14) != 0)) {
+                printf("file has unknown type!\n");
+                continue;
+            }
+            for ( size_t i = 0x10; i < size; i += 0x20 ) {
+                unsigned char* titleId = buffer + i + 0x00;
+                unsigned char* seed = buffer + i + 0x08;
+                int exid = 0;
+                for (exid = 0; exid < n_seeds; exid++) // duplicate check
+                    if ( memcmp(buffer + i, seeddb + 0x10 + (0x20 * exid), 0x20) == 0 ) break;
+                if (exid < n_seeds) continue;
+                memcpy(seeddb + 0x10 + (0x20 * n_seeds), buffer + i, 0x20);
+                printf("SEED found (%i):\n%08X%08X\n%08X%08X\n%08X%08X\n", ++n_seeds,
+                    *((unsigned int*) (titleId + 4)), *((unsigned int*) titleId),
+                    *((unsigned int*) (seed + 12)), *((unsigned int*) (seed + 8)),
+                    *((unsigned int*) (seed + 4)), *((unsigned int*) seed));
+            }
         }
     }
     
