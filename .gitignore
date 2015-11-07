@@ -2,6 +2,7 @@
 *.sav
 *.bin
 *.zip
+*.bat
 *.exe
 *.py
 
