@@ -48,13 +48,18 @@ int main( int argc, char** argv )
         // collect seeds
         if ( size == BUFFER_SIZE ) { // most likely a 00000000 file
             for ( int n = 0; n < 2; n++ ) {
-                unsigned char* seed_data = buffer + ((n == 0) ? 0x7000 : 0x5C000);
+                static const char zeroes[16] = { 0x00 };
+                static const int seed_offsets[2] = {0x7000, 0x5C000};
+                unsigned char* seed_data = buffer + seed_offsets[n];
                 for ( size_t i = 0; i < 2000; i++ ) {
                     static const char magic[4] = { 0x00, 0x00, 0x04, 0x00 };
                     unsigned char* titleId = seed_data + (i*8);
                     unsigned char* seed = seed_data + (2000 * 8) + (i*16);
                     int exid = 0;
                     if ( memcmp(titleId + 4, magic, 4) != 0 ) continue;
+                    if (memcmp(seed, zeroes, 16) == 0) // Bravely Second demo seedworkaround
+                        seed = buffer + seed_offsets[(n+1)%2] + (2000 * 8) + (i*16);
+                    if (memcmp(seed, zeroes, 16) == 0) continue;
                     for (exid = 0; exid < n_seeds; exid++) // duplicate check
                         if ( memcmp(titleId, seeddb + 0x10 + (0x20 * exid), 8) == 0 ) break;
                     if (exid < n_seeds) continue;
@@ -67,7 +72,7 @@ int main( int argc, char** argv )
                 }
             }
         } else { // maybe a seeddb.bin to merge - check first
-            static const char zeroes[16] = { 0 };
+            static const char zeroes[16] = { 0x00 };
             int n_entries = *(int*) buffer; // relies on your system being big endian
             if ((n_entries != (int) (size - 16) / 32) || (memcmp(buffer + 2, zeroes, 14) != 0)) {
                 printf("file has unknown type!\n");
@@ -77,6 +82,8 @@ int main( int argc, char** argv )
                 unsigned char* titleId = buffer + i + 0x00;
                 unsigned char* seed = buffer + i + 0x08;
                 int exid = 0;
+                if ((memcmp(titleId, zeroes, 8) == 0) || (memcmp(seed, zeroes, 16) == 0))
+                    continue; // don't merge zero seeds / titleIds
                 for (exid = 0; exid < n_seeds; exid++) // duplicate check
                     if ( memcmp(buffer + i, seeddb + 0x10 + (0x20 * exid), 0x20) == 0 ) break;
                 if (exid < n_seeds) continue;
