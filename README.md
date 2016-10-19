@@ -4,7 +4,7 @@ seeddb.bin generator for the 3DS console
 
 Instructions:
 
-Get the file at nand:/data/<console-unique>/sysdata/0001000f/00000000 (only available on FW 9.6, thus only available with a hardmod). Copy this to some directory on your PC together with seedconv.exe. Then just drag and drop 00000000 (or multiple different 00000000 files) onto seedconv.exe, and a working seeddb.bin should automagically be generated. If multiple files are used, the seeddb.bin will contain all unique seeds from all files.
+Get the file at nand:/data/(console-unique)/sysdata/0001000f/00000000 (only available on FW 9.6, thus only available with a hardmod). Copy this to some directory on your PC together with seedconv.exe. Then just drag and drop 00000000 (or multiple different 00000000 files) onto seedconv.exe, and a working seeddb.bin should automagically be generated. If multiple files are used, the seeddb.bin will contain all unique seeds from all files.
 
 Starting with version 4 of SEEDconv, if you drag and drop one or multiple seeddb.bin files (rename them first, must not be called 'seeddb.bin'!), the unique seeds from them will also get added to the newly generated seeddb.bin file. This works even when drag and dropping alongside one or multiple 00000000 files.
 
